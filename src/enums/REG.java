@@ -34,8 +34,8 @@ public enum REG {
     $fp("$fp", 30),
     $ra("$ra", 31);
 
-    String label;
-    int value;
+    public final String label;
+    public final int value;
 
     REG(String label, int value) {
         this.label = label;

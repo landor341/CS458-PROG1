@@ -18,9 +18,9 @@ public enum OP {
     sw("sw", new boolean[]{true, false, true, false, true, true}, ITYPE.I), // 101011
     syscall("syscall", new boolean[]{false, false, true, true, false, false}, ITYPE.SysCall);
 
-    public String name;
-    public boolean[] opcode;
-    public ITYPE type;
+    public final String name;
+    public final boolean[] opcode;
+    public final ITYPE type;
 
     OP(String name, boolean[] opcode, ITYPE type) {
         this.name = name;
