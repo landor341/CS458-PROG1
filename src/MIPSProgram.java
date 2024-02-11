@@ -1,7 +1,7 @@
-import Instructions.SysCall;
-import Instructions.Word;
+import Instructions.*;
 import enums.ITYPE;
 import enums.OP;
+import enums.REG;
 
 import java.util.ArrayList;
 import java.util.regex.Matcher;
@@ -12,75 +12,104 @@ public class MIPSProgram {
 
     // An arraylist is probably the most efficient data structure here, we just need to be able to sequentially access and occasionally jump to known indexes.
     // Though technically this could cause an issue if you were to jump into the middle of a word in memory (unsure if this is possible
-    ArrayList<Word> code = new ArrayList<Word>();
+    private ArrayList<Word> code = new ArrayList<Word>();
 
-    int curLine = 0; // Corresponds to the key used in the arrayList. This is like the "address", each instruction will get loaded into the curLine address then increment it 
+    private final String commentPattern = "#[^\\n]*?\\n"; // Ex: # 1 comment :)
+            private final String betweenWordsPattern = "(?:\\s|" + commentPattern + ")*"; // whitespace or comment pattern
+            private final String nextWordPattern = "(,|[^\\s,]*)"; // A comma counts as a full word by itself. A word can't include whitespace or #'s. Any punctuation will count as part of a word (brackets, minus signs, etc)
+            private final String remainingInputPattern = "([\\s\\S]*)"; //gets everything remaining
+    private final Pattern getNextWord = Pattern.compile(betweenWordsPattern + nextWordPattern); // clears out leading comments/whitepsace. Group 1 is the next word, Group 2 is the remaining input
+
+    int curLine = 0; // Corresponds to the key used in the arrayList. This is like the "address", each instruction will get loaded into the curLine address then increment it
 
 
     boolean append(String codeToAdd) {
         /*
-            If a word ends with a colon then it's a label
-            If a word starts with a $ then it's a register
-            If there is a # then nothing is read until a new line since those are comments
-
-            When looking for words, the # and ; character can be the character immediately after (it would be treated like whitespace)
-            commas separate registers/imms/labels
-
-            1. Find comments and blank lines
-            2. find a label (if there is a label, map it to curLine and continue)
-            3. Find a word (and map it to one of the OP enum values)
-                a. depending on its ITYPE type look for either a
-                    1. register
-                    2. immediate value
-                    3. label
-                    always look for commas and comments or newlines in between parameters
+            1. clear out comments and newlines before getting the next word. Start by identifying if the next word is a label or an instruciton then find parameters to match it. Repeat until through all text
 
             TODO: Handle semicolons, how to deal with larger files since instructions can be spread over multiple lines (Probably want to turn codeToAdd into some kind of stream)
          */
-        String commentPattern = "#[^\\n]*?\\n", // Ex: # 1 comment :)
-                betweenWords = "(?:\\s|" + commentPattern + ")*", // whitespace or comment pattern
-                nextRegister = "($\\w*?)", // Ex: $t0
-                nextOP = "([a-zA-Z]*)",
-                nextImmValue = "(0x[\\da-fA-F]+?)|([\\d]+?)", // Ex: 0x2a  or   55   TODO: labels
-                remainingInput = "([\\s\\S]*)"; //gets everything after whatevers found to continue searching from that point
-        Pattern goToNextWord = Pattern.compile(betweenWords + remainingInput),
-                getNextOP = Pattern.compile(nextOP + remainingInput),
-                getNextRegister = Pattern.compile(nextRegister + remainingInput);
+        Matcher nextWord = getNextWord.matcher(codeToAdd);
 
-        String curCode = codeToAdd;
+        while (nextWord.find()) {
+            // Check if the next word is a label (It would end with a colon)
 
-        while (!curCode.isEmpty()) {
-            curCode = goToNextWord.matcher(curCode).group(1);
-
-            // Check if the next word is a label (It would end with an apostrophe)
-
-            // Otherwise assume it's a valid operation. This will break everything if the word has a non a-z character in it
-            Matcher nextOp = getNextOP.matcher(curCode); // unary based indexing :(
-            curCode = nextOp.group(2);
-
+            // Otherwise assume it's a valid operation.
             for (OP o : OP.values()) {
-                if (o.name.equals(nextOp.group(1))) {
-                    if (o.type == ITYPE.R) {
-                        // search for rs, rt, rd, and sham
-                    } else if (o.type == ITYPE.I) {
-                        // search for rs, rt, and IMM
-                    } else if (o.type == ITYPE.J) {
-                        // search for addr
-                    } else if (o.type == ITYPE.SysCall) {
-                        code.add(new SysCall());
-                    }
+                if (o.name.equals(nextWord.group(1))) { // If the code returns true here then you could throw an "Unknown operation error" here
+                    if (o.type == ITYPE.R) nextWord = this.addROP(o, nextWord);
+                    else if (o.type == ITYPE.I) nextWord = this.addIOP(o, nextWord);
+                    else if (o.type == ITYPE.J) nextWord = this.addJOP(o, nextWord);
+                    else if (o.type == ITYPE.SysCall) code.add(new SysCall());
+
                     break;
                 }
             }
-
         }
-
-
         return false;
     }
 
+    //TODO: for addXOP functions, make function getParameters(int n, Matcher nextWord) that automatically gets the next n parameters
+
+    private Matcher addIOP(OP o, Matcher nextWord) {
+        // search for $rs         $rt        imm
+        nextWord.find();
+
+        String rt = nextWord.group(1);
+
+        nextWord.find();
+        if (!nextWord.group(1).equals(",")) throw new IllegalStateException();
+        nextWord.find();
+
+        String rs = nextWord.group(1);
+
+        nextWord.find();
+        if (!nextWord.group(1).equals(",")) throw new IllegalStateException();
+        nextWord.find();
+
+        String imm = nextWord.group(1);
+
+        code.add(new IInstruction(o, rs, rt, imm));
+
+        return nextWord;
+    }
+
+
+    private Matcher addJOP(OP o, Matcher nextWord) {
+        // search for addr
+        nextWord.find();
+        String addr = nextWord.group(1);
+        code.add(new JInstruction(o, addr));
+
+        return nextWord;
+    }
+
+
+    private Matcher addROP(OP o, Matcher nextWord) {
+        // search for rd then rt, rs, and shamt
+        nextWord.find();
+
+        String rd = nextWord.group(1);
+
+        nextWord.find();
+        if (!nextWord.group(1).equals(",")) throw new IllegalStateException();
+        nextWord.find();
+
+        String rt = nextWord.group(1);
+
+        nextWord.find();
+        if (!nextWord.group(1).equals(",")) throw new IllegalStateException();
+        nextWord.find();
+
+        String rsOrShamt = nextWord.group(1);
+
+        code.add(new RInstruction(o, rt, rd, rsOrShamt));
+
+        return nextWord;
+    }
+
     Word getCurrentWord() {
-        return code.get(curLine);
+        return code.get(curLine++);
     }
 
 }
