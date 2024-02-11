@@ -9,11 +9,12 @@ import java.util.regex.Pattern;
 
 // A program consists of a series of instructions. This class will be passed a stream of chars to search through
 public class MIPSProgram {
+
     // An arraylist is probably the most efficient data structure here, we just need to be able to sequentially access and occasionally jump to known indexes.
     // Though technically this could cause an issue if you were to jump into the middle of a word in memory (unsure if this is possible
     ArrayList<Word> code = new ArrayList<Word>();
 
-    int curLine = 0; // Index mapped to the code object
+    int curLine = 0; // Corresponds to the key used in the arrayList. This is like the "address", each instruction will get loaded into the curLine address then increment it 
 
 
     boolean append(String codeToAdd) {
