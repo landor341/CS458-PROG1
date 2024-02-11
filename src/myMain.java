@@ -1,3 +1,9 @@
+import Instructions.IInstruction;
+import Instructions.Word;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 // For now is a general top level class containing our main()
 public class myMain {
 
@@ -10,6 +16,6 @@ public class myMain {
 
         myProgram.append(args[0]);
 
-        System.out.println(myProgram.getCurrentWord().toHex());
+        Word result = myProgram.getCurrentWord();
     }
 }
