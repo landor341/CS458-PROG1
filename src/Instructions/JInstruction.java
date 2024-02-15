@@ -10,6 +10,6 @@ public class JInstruction extends Word {
 
     public JInstruction(OP o, String address) {
         // throw error if address isn't valid
-        System.out.println("RInstruction " + o.name + " " + address); // TODO: Remove. Debug line
+        System.out.println("JInstruction " + o.name + " " + address); // TODO: Remove. Debug line
     }
 }
