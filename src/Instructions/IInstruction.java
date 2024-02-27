@@ -1,6 +1,7 @@
 package Instructions;
 
 import enums.OP;
+import enums.REG;
 
 public class IInstruction extends Word {
     // Format of I Instruction:
@@ -8,7 +9,13 @@ public class IInstruction extends Word {
     //    opcode      $rs         $rt        imm
 
     public IInstruction(OP o, String rs, String rt, String imm) {
-        // throw error if rs and rt don't map to REG enums and if imm isn't an integer or hex (ex. "56" or "0xa34f")
-        System.out.println("IInstruction " + o.name + " " + rs + " " + rt + " " + imm); // TODO: Remove. Debug line
+        for (int i=0; i< o.opcode.length; i++) {
+            this.bits[i] = o.opcode[i];
+        }
+
+        addReg(rs, 6);
+        addReg(rt, 11);
+
+        addImm(imm, 16);
     }
 }
