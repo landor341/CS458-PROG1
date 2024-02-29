@@ -106,9 +106,7 @@ public class Word {
 
         if (boolReg == null) throw new IllegalArgumentException();
 
-        for (int j = 0; j < boolReg.length; j++) {
-            this.bits[j + baseBit] = boolReg[j];
-        }
+        for (int j = 0; j < boolReg.length; j++) { this.bits[j + baseBit] = boolReg[j]; }
     }
 
     protected void addImm(String value, int baseBit) {
@@ -120,8 +118,8 @@ public class Word {
             boolAddress = decimalToBinary(Integer.parseInt(value), baseBit);
         }
 
-        int offset = (32-baseBit) - boolAddress.length; // TODO: SIGN EXTEND
-        if (!isHex && boolAddress[0] == true) { //SIGN EXTENSION
+        int offset = (32-baseBit) - boolAddress.length;
+        if (!isHex && boolAddress[0]) { //SIGN EXTENSION
             for (int i=0; i<=offset; i++) {
                 this.bits[baseBit+i] = true;
             }

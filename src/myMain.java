@@ -14,11 +14,17 @@ public class myMain {
 
         MIPSProgram myProgram = new MIPSProgram();
 
-//        for (int i=0; i<args.length; i++) {
-//            myProgram.append(args[i]);
-//            System.out.println(myProgram.getCurrentWord().toHex());
-//        }
+        for (int i=0; i<args.length; i++) {
+            myProgram.append(args[i]);
+            System.out.println(myProgram.getCurrentWord().toHex());
+        }
 
+//        runTestSuite(myProgram);
+
+
+    }
+
+    private static void runTestSuite(MIPSProgram myProgram) {
 
         myProgram.append("add $t2, $s6, $s4");
         myProgram.append("add $at, $a2, $s2");
@@ -92,14 +98,33 @@ public class myMain {
         myProgram.append("sw $t5, -179($t3)");
         myProgram.append("syscall");
 
+        String[] expectedOutput = {
+                "02d45020", "00d20820", "01dd7820", "0034d020", "01485820",
+                "2670006e", "24180074", "254b0032", "247affc8", "275e000b",
+                "00e6c024", "0235b024", "005c6824", "039fb024", "03ab9024",
+                "324c0067", "32feff6b", "31f0ffa9", "32b200dd", "3083ff8a",
+                "124600bb", "1026ff8f", "106f00fd", "11c90026", "11f00090", // Expected to fail
+                "16100028", "164b00a0", "142cffb9", "15770060", "1492ff67", // Expected to fail
+                "080000c5", "08000048", "08000015", "08000053", "0800002d",
+                "3c0300d3", "3c130049", "3c0e0085", "3c0a00c7", "3c1700d2",
+                "8f240085", "8f4b002b", "8ec20000", "8cab0000", "8ffaff8a",
+                "01484025", "02840025", "032f4825", "03181825", "03c8d025",
+                "3707005b", "36d7ff17", "378a003c", "35deff23", "37c0ffb5",
+                "01bc402a", "009e282a", "038b182a", "0011002a", "03a9d02a",
+                "003da822", "0158e822", "03a4a022", "02af2822", "0277b822",
+                "ae4e0000", "afcd0000", "add20000", "ac010027", "ad6dff4d",
+                "0000000c"
+        };
+
         Word result;
         int count = 0;
         while (myProgram.hasNextWord()) {
-            if (count % 5 == 0) System.out.println("\n");
             result = myProgram.getCurrentWord();
-            System.out.println(result.toHex());
+            if (!result.toHex().equals(expectedOutput[count]))
+                System.out.println("Expected: [" + expectedOutput[count] + "] " + "Actual: [" + result.toHex() + "]");
             count++;
         }
         System.out.println("TOTAL: " + count);
     }
+
 }

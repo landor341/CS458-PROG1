@@ -12,28 +12,24 @@ import java.util.regex.Pattern;
 public class MIPSProgram {
 
     // An arraylist is probably the most efficient data structure here, we just need to be able to sequentially access and occasionally jump to known indexes.
-    // Though technically this could cause an issue if you were to jump into the middle of a word in memory (unsure if this is possible
+    // Though technically this wouldn't be compatible if you were able to jump directly into the middle of a word in memory (I don't believe it's possible to set the PC like that)
     private ArrayList<Word> code = new ArrayList<Word>();
 
+    // Regex DEFINITELY are not a very efficient implementation but I hate writing string parsers
     private final String commentPattern = "#[^\\n]*?\\n"; // Ex: # 1 comment :)
             private final String betweenWordsPattern = "(?:\\s|" + commentPattern + ")*"; // whitespace or comment pattern
-            private final String nextWordPattern = "(\\(|\\)|,|[^\\s,#()]*)"; // A comma counts as a full word by itself. A word can't include whitespace or #'s. Any punctuation will count as part of a word (brackets, minus signs, etc)
-            private final String remainingInputPattern = "([\\s\\S]*)"; //gets everything remaining
-    private final Pattern getNextWord = Pattern.compile(betweenWordsPattern + nextWordPattern); // clears out leading comments/whitepsace. Group 1 is the next word, Group 2 is the remaining input
+            private final String nextWordPattern = "(\\(|\\)|,|[^\\s,#()]*)"; // commas and parenthesis count full words. A word can't include whitespace, commas, parenthesis, or #'s. Any other punctuation will count as part of a word (brackets, minus signs, etc)
+    private final Pattern getNextWord = Pattern.compile(betweenWordsPattern + nextWordPattern); // clears out leading comments/whitepsace. Group 1 is the next word
 
     int curLine = 0; // Corresponds to the key used in the arrayList. This is like the "address", each instruction will get loaded into the curLine address then increment it
 
 
     boolean append(String codeToAdd) {
-        /*
-            1. clear out comments and newlines before getting the next word. Start by identifying if the next word is a label or an instruciton then find parameters to match it. Repeat until through all text
-
-            TODO: Handle semicolons, how to deal with larger files since instructions can be spread over multiple lines (Probably want to turn codeToAdd into some kind of stream)
-         */
         Matcher nextWord = getNextWord.matcher(codeToAdd);
 
         while (nextWord.find()) {
             // Check if the next word is a label (It would end with a colon)
+            // TODO: Label functionality. Create a hashmap to store the words that need to be returned to.
 
             // Otherwise assume it's a valid operation.
             for (OP o : OP.values()) {
@@ -49,8 +45,6 @@ public class MIPSProgram {
         }
         return false;
     }
-
-    //TODO: for addXOP functions, make function getParameters(int n, Matcher nextWord) that automatically gets the next n parameters
 
     private Matcher addOP(OP o, Matcher nextWord) {
         if (o.format == IFormat.rdRsRt) {
