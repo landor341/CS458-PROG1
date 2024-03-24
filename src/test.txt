@@ -1,0 +1,42 @@
+	.data
+prompt_string: .asciiz "Enter the number of sequence numbers to print: "
+number_delimiter: .asciiz ", "
+	.text
+main:
+    # Print out user prompt
+    la $a0, prompt_string #set a0 to point to prompt_string
+    li $v0, 4 # syscall for printing string
+    syscall #print out prompt_string
+
+    li $v0, 5
+    syscall
+    move $t0, $v0
+    
+    # Initialize values in sequence
+    addi $t1, $0, 0 # $t1 is Previous element in sequence
+    addi $t2, $0, 1 # $t2 is Current element in sequence (starts at the second numer in the sequence)
+    
+    get_next_element:
+    	print_next_value:
+    	    # Print current value in sequence ($t2)
+    	    add  $a0, $t2, $0 
+    	    addi $v0, $0, 1 # Syscall to print integer
+    	    syscall # Print out value in $a0   ($t2)
+    	
+    	    # Print ", " between values in sequence
+            la $a0, number_delimiter #set a0 to point to number_delimiter
+            addi $v0, $0, 4 # syscall for printing string
+            syscall #print out number_delimiter
+    	
+    	# Update values in sequence
+    	add $t3, $t2, $t1 # Temporarily store next element in $t3
+    	add $t1, $t2, $0 # Update $t1 to be previous element (which is the "current" element in $t2 that just got printed)
+    	add $t2, $t3, $0 # Put the next element that was temporarily in $t3 into $t2
+        
+    	subi $t0, $t0, 1 # Decrement loop counter
+    	bgt $t0, $0, get_next_element # Loop again if the loop counter is still greater than zero
+    	# ABOVE SHOULD BE bgt BUT WAS CHANGED TO blt FOR TESTING
+    
+    li $v0, 10 # terminate program
+    syscall
+        

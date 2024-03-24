@@ -1,0 +1,14 @@
+.data
+    myString:
+        .asciiz "fifth"
+    midWordString:
+        .asciiz "settle"
+    newWordString:
+        .word 32
+.text
+    testLabel:
+        add $t2, $s6, $s4
+        add $at, $a2, $s2
+    label2: add $t7, $t6, $sp
+        add $k0, $at, $s4
+        add $t3, $t2, $t0

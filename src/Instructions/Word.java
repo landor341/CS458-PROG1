@@ -1,13 +1,26 @@
 package Instructions;
 
+import enums.OP;
 import enums.REG;
+import mips.labelPosTracker;
 
 import java.security.Key;
+import java.util.Arrays;
 
 // Represents a word in memory
 public class Word {
 
     public Word() { }
+
+    public Word(boolean debug) {
+        if (debug) {
+            Arrays.fill(bits, true);
+        }
+    }
+
+    public Word(String immOrLabel, labelPosTracker pos) {
+        this.addImm(immOrLabel, 0, pos, OP.nop);
+    }
 
     public Word(String hexNum) {
         boolean[] res = hexToBinary(hexNum);
@@ -41,12 +54,12 @@ public class Word {
         return sb.toString();
     }
 
-    protected boolean[] decimalToBinary(int num, int length) {
+    public static boolean[] decimalToBinary(int num, int length) {
         boolean needsTwosComplement = num < 0;
         boolean[] res = new boolean[length];
-
+        int og = num;
         int index = res.length-1;
-        while (Math.abs(num) >= 1) {
+        while (index >= 0 && Math.abs(num) >= 1) {
             if (num % 2 == 1 || num % 2 == -1) res[index] = true;
             num /= 2;
             index--;
@@ -82,7 +95,7 @@ public class Word {
         return res;
     }
 
-    // LUT is probably an efficient implementation
+    // LUT is probably an efficient implementation from hex to binary and vice versa
     protected final char[] hex = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
     protected final boolean[][] binary = {
             {false, false, false, false}, {false, false, false, true}, {false, false, true, false}, {false, false, true, true},
@@ -109,17 +122,25 @@ public class Word {
         for (int j = 0; j < boolReg.length; j++) { this.bits[j + baseBit] = boolReg[j]; }
     }
 
-    protected void addImm(String value, int baseBit) {
+    protected void addImm(String value, int baseBit, labelPosTracker pos, OP o) {
         boolean[] boolAddress;
-        boolean isHex = value.length() > 1 && value.charAt(1) == 'x';
-        if (isHex) {
-            boolAddress = hexToBinary(value.substring(2));
+        boolean isNum = Character.isDigit(value.charAt(0));
+        boolean isHex = value.length() > 1 && value.charAt(0) == '0' && value.charAt(1) == 'x';
+        if (isNum) {
+            if (isHex) {
+                boolAddress = hexToBinary(value.substring(2));
+            } else {
+                boolAddress = decimalToBinary(Integer.parseInt(value), baseBit);
+            }
         } else {
-            boolAddress = decimalToBinary(Integer.parseInt(value), baseBit);
+            if (o == OP.beq || o == OP.bne) boolAddress = decimalToBinary((pos.getRelativeLabelValue(value)) / 4, 32-baseBit);
+            else if (o == OP.PSEUDObne) boolAddress = decimalToBinary((pos.getRelativeLabelValue(value)) / 4, 32-baseBit);
+            else if (o == OP.j) boolAddress = decimalToBinary(pos.getLabelValue(value)/4+1, 32-baseBit); // TODO Truncate value?
+            else boolAddress = decimalToBinary(pos.getRelativeLabelValue(value), 32 - baseBit);
         }
 
         int offset = (32-baseBit) - boolAddress.length;
-        if (!isHex && boolAddress[0]) { //SIGN EXTENSION
+        if (isHex && boolAddress[0]) { //SIGN EXTENSION
             for (int i=0; i<=offset; i++) {
                 this.bits[baseBit+i] = true;
             }
