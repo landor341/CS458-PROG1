@@ -132,7 +132,7 @@ public class MIPSProgram {
                     if (this.pos.getCurrentPos()%4!=0) {
                         curBit = this.pos.getCurrentPos()%4;
                         alreadyAdded = true;
-                        cur = (fourBytes) (this.pos.getState() == labelPosTracker.programStage.data ? data.getLast() : code.getLast());
+                        cur = (fourBytes) (this.pos.getState() == labelPosTracker.programStage.data ? data.get(data.size()-1) : code.get(data.size()-1));
                     } else {
                         alreadyAdded = false;
                         cur = new fourBytes();
