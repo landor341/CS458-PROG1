@@ -133,10 +133,10 @@ public class Word {
                 boolAddress = decimalToBinary(Integer.parseInt(value), baseBit);
             }
         } else {
-            if (o == OP.beq || o == OP.bne) boolAddress = decimalToBinary((pos.getRelativeLabelValue(value)) / 4, 32-baseBit);
-            else if (o == OP.PSEUDObne) boolAddress = decimalToBinary((pos.getRelativeLabelValue(value)) / 4, 32-baseBit);
-            else if (o == OP.j) boolAddress = decimalToBinary(pos.getLabelValue(value)/4+1, 32-baseBit); // TODO Truncate value?
-            else boolAddress = decimalToBinary(pos.getRelativeLabelValue(value), 32 - baseBit);
+            if (o == OP.beq || o == OP.bne) boolAddress = decimalToBinary((pos.getRelativeLabelValue(value, o)/4)-1, 32-baseBit);
+            else if (o == OP.PSEUDObne) boolAddress = decimalToBinary(pos.getRelativeLabelValue(value, o)/4-1, 32-baseBit);
+            else if (o == OP.j) boolAddress = decimalToBinary(pos.getLabelValue(value)/4, 32-baseBit); // TODO Truncate value?
+            else boolAddress = decimalToBinary(pos.getRelativeLabelValue(value, o), 32 - baseBit);
         }
 
         int offset = (32-baseBit) - boolAddress.length;

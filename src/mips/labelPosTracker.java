@@ -1,5 +1,7 @@
 package mips;
 
+import enums.OP;
+
 import java.util.HashMap;
 
 public class labelPosTracker {
@@ -25,7 +27,11 @@ public class labelPosTracker {
         return labelMap.get(label);
     }
 
-    public int getRelativeLabelValue(String label) {
+    public int getRelativeLabelValue(String label, OP o) {
+        if (o == OP.PSEUDObne) {
+            if (this.state == programStage.text) return this.labelMap.get(label) - (this.curLine+this.textStart+4);
+            else return this.labelMap.get(label) - (this.dataLine+this.dataStart+4);
+        }
         if (this.state == programStage.text) return this.labelMap.get(label) - (this.curLine+this.textStart);
         else return this.labelMap.get(label) - (this.dataLine+this.dataStart);
     }

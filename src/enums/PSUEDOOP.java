@@ -8,7 +8,6 @@ import mips.MIPSFileParser;
 import mips.labelPosTracker;
 
 import java.io.IOException;
-import java.util.HexFormat;
 
 public enum PSUEDOOP {
     li("li"), // 1
@@ -88,8 +87,9 @@ public enum PSUEDOOP {
                         else imm += this.parseImm(n, pos, false);
                         if (words.peak() == '+') {
                             words.getNextWord(); // will be +
+                            n = words.getNextWord();
                             if (!Character.isDigit(n.charAt(0))) foundLabel = true;
-                            else imm += this.parseImm(words.getNextWord(), pos, false);
+                            else imm += this.parseImm(n, pos, false);
                         }
                     } else foundParen = true;
                 }
@@ -97,8 +97,8 @@ public enum PSUEDOOP {
                     if (!foundParen) words.getNextWord(); // Will be (
                     String rs = words.getNextWord();
                     words.getNextWord(); // will be )
-                    if (foundLabel || imm > 0xFFFF) return 3; // TODO: I just assume that if it's a lable that it's going ot be greater than 0xFFFF since the label may not yet be known when this runs
-                    if (foundParen) return 1;
+                    if (foundLabel || imm > 0xFFFF) return 3; // TODO: I just assume that if it's a label with a register offset that it's going ot be greater than 0xFFFF since the label may not yet be known when this runs
+                    if (imm == 0) return 1;
                     return 2;
                 } else if (foundLabel || imm > 0xFFFF) return 2;
                 return 1;
@@ -140,7 +140,7 @@ public enum PSUEDOOP {
             String rs = words.getNextWord();
             words.getNextWord(); // will be )
             if (imm > 0xFFFF) {
-                String toHex = HexFormat.of().toHexDigits(imm); // Converts to 8 bit string
+                String toHex = Integer.toHexString(imm); // Converts to 8 bit string
                 String upperHex = "0x"+toHex.substring(0,4);
                 String lowerHex = "0x"+toHex.substring(4);
                 return new Word[] {
@@ -159,7 +159,7 @@ public enum PSUEDOOP {
         } else {
             // cover cases 1,2,3 with the imm var value
             if (imm > 0xFFFF) {
-                String toHex = HexFormat.of().toHexDigits(imm); // Converts to 8 bit string
+                String toHex = Integer.toHexString(imm); // Converts to 8 bit string
                 String upperHex = "0x"+toHex.substring(0,4);
                 String lowerHex = "0x"+toHex.substring(4);
                 return new Word[] {
@@ -176,7 +176,7 @@ public enum PSUEDOOP {
 
     public int parseImm(String imm, labelPosTracker pos, boolean isWordCount) {
         if (imm.length() > 1 && imm.substring(0,2).equals("0x")) {
-            return HexFormat.fromHexDigits(imm.substring(2));
+            return Integer.parseInt(imm.substring(2), 16);
         } else if (Character.isDigit(imm.charAt(0))) {
              return Integer.parseInt(imm);
         } else {

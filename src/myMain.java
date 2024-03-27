@@ -5,7 +5,6 @@ import mips.MIPSProgram;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HexFormat;
 
 // For now is a general top level class containing our main()
 public class myMain {
@@ -33,7 +32,6 @@ public class myMain {
             fileW.close();
             curFile = new File(args[0]+".data");
             fileW = new FileWriter(curFile);
-            System.out.println("\n\nData: ");
             for (Object w: test.getData()) {
                 fileW.append(((Word) w).toHex());
                 fileW.append('\n');
