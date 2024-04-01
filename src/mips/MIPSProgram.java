@@ -16,6 +16,9 @@ public class MIPSProgram {
 
     labelPosTracker pos = new labelPosTracker();
 
+    boolean finishedData = false;
+    boolean finishedText = false;
+
 
 
     public MIPSProgram(String filePath) throws IOException {
@@ -26,6 +29,13 @@ public class MIPSProgram {
     private void append(String filePath) throws IOException {
         MIPSFileParser words = new MIPSFileParser(filePath);
         this.appendLabels(words);
+        if (!finishedText){
+            words = new MIPSFileParser(filePath);
+            this.appendLabels(words);
+
+            finishedData = false;
+            finishedText = false;
+        }
 
         words = new MIPSFileParser(filePath);
         this.appendText(words);
@@ -44,8 +54,13 @@ public class MIPSProgram {
             if (word.equals(".data")) {
                 pos.setState(labelPosTracker.programStage.data);
             } else if (word.equals(".text")) {
+                if (pos.getState() == labelPosTracker.programStage.data && !finishedData) {
+                    finishedData = true;
+                    finishedText = true;
+                }
                 pos.setState(labelPosTracker.programStage.text);
-            } else if (pos.getState() == labelPosTracker.programStage.none) {
+            } else if (pos.getState() == labelPosTracker.programStage.none
+                        || (pos.getState() == labelPosTracker.programStage.text && !this.finishedData)) {
                 continue;
             } else if (word.charAt(word.length()-1) == ':') { // it's a label
                 needToAddLabel = true;
@@ -60,7 +75,7 @@ public class MIPSProgram {
                     words.endLine();
                     continue;
                 }
-                else if (word.equals(DIRECTIVES.space.name)) {
+                else if (word.equals(DIRECTIVES.space.name)) { // TODO: This is broken
                     if (needToAddLabel) {
                         needToAddLabel = false;
                         this.pos.addLabel(nextLabel);
@@ -103,6 +118,7 @@ public class MIPSProgram {
                 }
             }
         }
+        finishedData = true;
         this.pos.start();
         words.close();
     }
@@ -110,7 +126,6 @@ public class MIPSProgram {
     private void appendText(MIPSFileParser words) throws IOException {
         pos.start();
 
-        // Scan to assign labels
         while (!words.isFinished()) {
             String word = words.getNextWord();
             if (words.isFinished()) break;
@@ -151,14 +166,14 @@ public class MIPSProgram {
 
                     this.pos.advanceNBytes(numBits);
                     continue;
-                } else if (word.equals(DIRECTIVES.space.name)) {
+                } else if (word.equals(DIRECTIVES.space.name)) { // TODO: broken
                     int numBytes = Integer.parseInt(words.getNextWord());
                     for (int i=0; i<numBytes; i+=4) this.addToCode(new Word());
                     this.pos.advanceNBytes(numBytes);
                     continue;
                 } else if (word.equals(DIRECTIVES.word.name)) {
                     this.pos.goToNextWordBeginning();
-                    this.addToCode(new Word(words.getNextWord()));
+                    this.addToCode(new Word(words.getNextWord(), pos));
                     this.pos.goToNextWord();
                     continue;
                 }

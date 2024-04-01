@@ -19,7 +19,7 @@ public class Word {
     }
 
     public Word(String immOrLabel, labelPosTracker pos) {
-        this.addImm(immOrLabel, 0, pos, OP.nop);
+        this.addImm(immOrLabel, 31, pos, OP.nop);
     }
 
     public Word(String hexNum) {

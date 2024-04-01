@@ -7,6 +7,7 @@
 .text
 
 	# prompt the user for input
+theStart:
 	li $v0, 4
 	la $a0, input_request
 	la $t1, ($t1)
@@ -17,8 +18,10 @@
 	la $t1, input_request($t0)
 	la $t1, input_request+100
 	la $t1, input_request+100($t0)
+	la $t0, theStart+5($t0)
 	blt $t1, $t2, EXIT
 	blt $t1, 100, EXIT
+	blt $t1, 100, theStart
 	
 	syscall
 	

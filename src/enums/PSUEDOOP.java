@@ -80,10 +80,20 @@ public enum PSUEDOOP {
                 int imm = 0;
                 boolean foundParen = false;
                 boolean foundLabel = false;
+                boolean labelHadValue = false;
                 if (words.peak() != '(') {
                     String n = words.getNextWord();
                     if (!n.equals("(")) {
-                        if (!Character.isDigit(n.charAt(0))) foundLabel = true;
+                        if (!Character.isDigit(n.charAt(0))) {
+                            foundLabel = true;
+
+                            Integer labelValue = pos.getLabelValue(n);
+                            if (labelValue != null) {
+                                labelHadValue = true;
+                                imm += labelValue;
+                            }
+
+                        }
                         else imm += this.parseImm(n, pos, false);
                         if (words.peak() == '+') {
                             words.getNextWord(); // will be +
@@ -97,10 +107,10 @@ public enum PSUEDOOP {
                     if (!foundParen) words.getNextWord(); // Will be (
                     String rs = words.getNextWord();
                     words.getNextWord(); // will be )
-                    if (foundLabel || imm > 0xFFFF) return 3; // TODO: I just assume that if it's a label with a register offset that it's going ot be greater than 0xFFFF since the label may not yet be known when this runs
+                    if ((foundLabel && !labelHadValue) || imm > 0xFFFF) return 3; // TODO: I just assume that if it's a label with a register offset that it's going ot be greater than 0xFFFF since the label may not yet be known when this runs
                     if (imm == 0) return 1;
                     return 2;
-                } else if (foundLabel || imm > 0xFFFF) return 2;
+                } else if ((foundLabel && !labelHadValue) || imm > 0xFFFF) return 2;
                 return 1;
             }
             if (this == blt) {
@@ -140,6 +150,7 @@ public enum PSUEDOOP {
             String rs = words.getNextWord();
             words.getNextWord(); // will be )
             if (imm > 0xFFFF) {
+                // I don't remember why I convert the offset to hex
                 String toHex = Integer.toHexString(imm); // Converts to 8 bit string
                 String upperHex = "0x"+toHex.substring(0,4);
                 String lowerHex = "0x"+toHex.substring(4);

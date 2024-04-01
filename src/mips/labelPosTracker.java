@@ -23,7 +23,7 @@ public class labelPosTracker {
         labelMap.put(label, this.state == programStage.data ? dataLine+dataStart : curLine+textStart);
     }
 
-    public int getLabelValue(String label) {
+    public Integer getLabelValue(String label) {
         return labelMap.get(label);
     }
 

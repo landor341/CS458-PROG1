@@ -20,7 +20,7 @@ public class myMain {
         try {
             MIPSProgram test = new MIPSProgram(args[0]);
             int count = 0;
-            File curFile = new File(args[0]+".text");
+            File curFile = new File(args[0].split("\\.")[0]+".text");
             if (!curFile.exists()) curFile.createNewFile();
             FileWriter fileW = new FileWriter(curFile);
             for (Object w : test.getCode()) {
@@ -28,9 +28,8 @@ public class myMain {
                 fileW.append('\n');
             }
 
-            count = 0;
             fileW.close();
-            curFile = new File(args[0]+".data");
+            curFile = new File(args[0].split("\\.")[0]+".data");
             fileW = new FileWriter(curFile);
             for (Object w: test.getData()) {
                 fileW.append(((Word) w).toHex());

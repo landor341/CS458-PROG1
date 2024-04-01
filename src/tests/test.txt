@@ -1,6 +1,8 @@
 	.data
 prompt_string: .asciiz "Enter the number of sequence numbers to print: "
 number_delimiter: .asciiz ", "
+        .word 56
+        .word 0x32
 	.text
 main:
     # Print out user prompt
