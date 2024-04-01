@@ -152,6 +152,7 @@ public enum PSUEDOOP {
             if (imm > 0xFFFF) {
                 // I don't remember why I convert the offset to hex
                 String toHex = Integer.toHexString(imm); // Converts to 8 bit string
+                while (toHex.length() != 8) toHex = "0" + toHex;
                 String upperHex = "0x"+toHex.substring(0,4);
                 String lowerHex = "0x"+toHex.substring(4);
                 return new Word[] {

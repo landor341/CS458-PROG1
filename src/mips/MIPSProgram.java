@@ -125,7 +125,7 @@ public class MIPSProgram {
 
     private void appendText(MIPSFileParser words) throws IOException {
         pos.start();
-
+        int las=0;
         while (!words.isFinished()) {
             String word = words.getNextWord();
             if (words.isFinished()) break;
@@ -185,6 +185,7 @@ public class MIPSProgram {
                 for (PSUEDOOP p: PSUEDOOP.values())
                     if (word.equals(p.name())) {
                         found = true;
+                        if (p == PSUEDOOP.la) las++;
                         for (Word w : p.parseInstruction(words, pos)) {
                             addToCode(w);
                             this.pos.goToNextWord();

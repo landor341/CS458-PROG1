@@ -1,9 +1,3 @@
-.data
-
-	input_request:	.asciiz	"Enter your integer: "
-	even_output:	.asciiz	"Your integer is EVEN!"
-	odd_output:	.asciiz	"Your integer is ODD!"
-
 .text
 
 	# prompt the user for input
@@ -58,3 +52,9 @@ ITS_ODD:
 EXIT:	
 	li $v0, 10
 	syscall
+.data
+
+	input_request:	.asciiz	"Enter your integer: "
+	even_output:	.asciiz	"Your integer is EVEN!"
+	odd_output:	.asciiz	"Your integer is ODD!"
+
