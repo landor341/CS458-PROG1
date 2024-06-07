@@ -78,6 +78,7 @@ public class Word {
         return res;
     }
 
+
     protected boolean[] hexToBinary(String num) {
         boolean[] res = new boolean[num.length()*4];
 
@@ -94,6 +95,7 @@ public class Word {
 
         return res;
     }
+
 
     // LUT is probably an efficient implementation from hex to binary and vice versa
     protected final char[] hex = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
